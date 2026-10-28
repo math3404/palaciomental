@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', cast=bool, default=True)
+DEBUG = config('DJANGO_DEBUG', cast=bool, default=True)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(), default='localhost,127.0.0.1')
 
@@ -96,6 +96,34 @@ DATABASES = {
         conn_health_checks=True
     )
 }
+
+
+# Redis é uma camada de aceleração; o PostgreSQL continua sendo a fonte oficial.
+# Fora do Compose, REDIS_URL pode ser omitida e o cache local será utilizado.
+REDIS_URL = config("REDIS_URL", default="")
+
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            "TIMEOUT": 300,
+            "KEY_PREFIX": config("CACHE_KEY_PREFIX", default="pm"),
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "palacio-mental-local",
+            "TIMEOUT": 300,
+        }
+    }
+
+# A sessão permanece no banco e usa o cache apenas para acelerar as leituras.
+# Assim, uma falha do Redis não transforma o cache em fonte única da sessão.
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+SESSION_CACHE_ALIAS = "default"
 
 
 # Password validation

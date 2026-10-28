@@ -13,6 +13,19 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: "redis:7-alpine"
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   django:
     build:
       context: .
@@ -22,6 +35,8 @@ services:
       - "8000:8000"
     depends_on:
       database:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/saude')"]
@@ -47,3 +62,4 @@ services:
 
 volumes:
   pgdata:
+  redisdata:
