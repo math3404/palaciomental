@@ -101,6 +101,9 @@ DATABASES = {
 # Redis é uma camada de aceleração; o PostgreSQL continua sendo a fonte oficial.
 # Fora do Compose, REDIS_URL pode ser omitida e o cache local será utilizado.
 REDIS_URL = config("REDIS_URL", default="")
+TENANT_CACHE_TTL = config("TENANT_CACHE_TTL", cast=int, default=300)
+TENANT_BRANDING_CACHE_TTL = config("TENANT_BRANDING_CACHE_TTL", cast=int, default=300)
+TENANT_PUBLIC_CONFIG_CACHE_TTL = config("TENANT_PUBLIC_CONFIG_CACHE_TTL", cast=int, default=120)
 
 if REDIS_URL:
     CACHES = {
